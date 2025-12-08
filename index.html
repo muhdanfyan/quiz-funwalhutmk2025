@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard Quiz - Fun Walk HUT MK 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .podium-1 { animation: pulse 2s infinite; }
+        .podium-2 { animation: pulse 2.5s infinite; }
+        .podium-3 { animation: pulse 3s infinite; }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .slide-in { animation: slideIn 0.5s ease-out forwards; }
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .count-up { animation: countUp 0.3s ease-out; }
+        .live-dot {
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-2">
+                🏆 Leaderboard Quiz
+            </h1>
+            <h2 class="text-xl md:text-2xl font-semibold text-purple-300">
+                Fun Walk HUT MK 2025
+            </h2>
+            <div class="flex items-center justify-center mt-4 space-x-2">
+                <span class="live-dot w-3 h-3 bg-red-500 rounded-full"></span>
+                <span class="text-red-400 font-semibold">LIVE</span>
+                <span class="text-gray-400 text-sm" id="lastUpdate">Memuat...</span>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white/10 backdrop-blur rounded-xl p-4 text-center">
+                <div class="text-3xl font-bold text-white" id="totalPeserta">0</div>
+                <div class="text-purple-300 text-sm">Total Peserta</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur rounded-xl p-4 text-center">
+                <div class="text-3xl font-bold text-green-400" id="skorTertinggi">0</div>
+                <div class="text-purple-300 text-sm">Skor Tertinggi</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur rounded-xl p-4 text-center">
+                <div class="text-3xl font-bold text-yellow-400" id="rataRata">0</div>
+                <div class="text-purple-300 text-sm">Rata-rata Skor</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur rounded-xl p-4 text-center">
+                <div class="text-3xl font-bold text-blue-400" id="perfectScore">0</div>
+                <div class="text-purple-300 text-sm">Perfect Score</div>
+            </div>
+        </div>
+
+        <!-- Podium Top 3 -->
+        <div class="flex justify-center items-end space-x-4 mb-8" id="podium">
+            <!-- Akan diisi oleh JavaScript -->
+        </div>
+
+        <!-- Leaderboard Table -->
+        <div class="bg-white/10 backdrop-blur rounded-2xl overflow-hidden">
+            <div class="bg-white/5 px-6 py-4 border-b border-white/10">
+                <h3 class="text-xl font-bold text-white">📊 Ranking Lengkap</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-white/5 text-purple-300 text-sm">
+                            <th class="px-6 py-4 text-left">Rank</th>
+                            <th class="px-6 py-4 text-left">Nama</th>
+                            <th class="px-6 py-4 text-center">Skor</th>
+                            <th class="px-6 py-4 text-right">Waktu Submit</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody">
+                        <!-- Akan diisi oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 text-gray-400 text-sm">
+            <p>Auto refresh setiap 5 detik</p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.muhdan.web.id/api/responses';
+        let previousData = [];
+
+        async function fetchLeaderboard() {
+            try {
+                const response = await fetch(API_URL);
+                const result = await response.json();
+                
+                if (result.data) {
+                    const sortedData = result.data
+                        .filter(item => item.Score !== null && item.Score !== undefined)
+                        .map(item => ({
+                            ...item,
+                            scoreNum: parseInt(item.Score.split('/')[0]) || 0,
+                            totalQuestions: parseInt(item.Score.split('/')[1]) || 10
+                        }))
+                        .sort((a, b) => b.scoreNum - a.scoreNum);
+                    
+                    updateStats(sortedData);
+                    updatePodium(sortedData.slice(0, 3));
+                    updateLeaderboard(sortedData);
+                    previousData = sortedData;
+                }
+                
+                document.getElementById('lastUpdate').textContent = 
+                    `Update: ${new Date().toLocaleTimeString('id-ID')}`;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        function updateStats(data) {
+            const total = data.length;
+            const highest = data.length > 0 ? data[0].scoreNum : 0;
+            const avg = data.length > 0 
+                ? Math.round(data.reduce((sum, item) => sum + item.scoreNum, 0) / data.length) 
+                : 0;
+            const perfect = data.filter(item => item.scoreNum === item.totalQuestions).length;
+
+            animateNumber('totalPeserta', total);
+            animateNumber('skorTertinggi', highest);
+            animateNumber('rataRata', avg);
+            animateNumber('perfectScore', perfect);
+        }
+
+        function animateNumber(elementId, value) {
+            const el = document.getElementById(elementId);
+            const current = parseInt(el.textContent) || 0;
+            if (current !== value) {
+                el.textContent = value;
+                el.classList.add('count-up');
+                setTimeout(() => el.classList.remove('count-up'), 300);
+            }
+        }
+
+        function updatePodium(top3) {
+            const podium = document.getElementById('podium');
+            const medals = ['🥇', '🥈', '🥉'];
+            const colors = ['from-yellow-400 to-yellow-600', 'from-gray-300 to-gray-500', 'from-orange-400 to-orange-600'];
+            const heights = ['h-40', 'h-32', 'h-28'];
+            const order = [1, 0, 2]; // Display order: 2nd, 1st, 3rd
+
+            let html = '';
+            order.forEach((idx, displayIdx) => {
+                if (top3[idx]) {
+                    const item = top3[idx];
+                    html += `
+                        <div class="flex flex-col items-center podium-${idx + 1}">
+                            <div class="text-4xl mb-2">${medals[idx]}</div>
+                            <div class="text-white font-bold text-center text-sm md:text-base mb-2 max-w-24 truncate">
+                                ${item['Nama Lengkap'] || 'Unknown'}
+                            </div>
+                            <div class="bg-gradient-to-b ${colors[idx]} ${heights[idx]} w-20 md:w-28 rounded-t-lg flex items-center justify-center">
+                                <span class="text-2xl md:text-3xl font-bold text-white">${item.scoreNum}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            podium.innerHTML = html;
+        }
+
+        function updateLeaderboard(data) {
+            const tbody = document.getElementById('leaderboardBody');
+            const rankEmojis = ['🥇', '🥈', '🥉'];
+            
+            let html = '';
+            data.forEach((item, index) => {
+                const isNew = !previousData.find(p => 
+                    p['Nama Lengkap'] === item['Nama Lengkap'] && p.Timestamp === item.Timestamp
+                );
+                const rank = index + 1;
+                const rankDisplay = rank <= 3 ? rankEmojis[rank - 1] : rank;
+                const bgClass = rank <= 3 ? 'bg-white/5' : '';
+                const animClass = isNew ? 'slide-in' : '';
+
+                html += `
+                    <tr class="${bgClass} ${animClass} border-b border-white/5 hover:bg-white/10 transition-colors">
+                        <td class="px-6 py-4 text-white font-bold">${rankDisplay}</td>
+                        <td class="px-6 py-4">
+                            <div class="text-white font-semibold">${item['Nama Lengkap'] || 'Unknown'}</div>
+                            <div class="text-purple-300 text-sm">${item['Email'] || ''}</div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="bg-gradient-to-r from-green-400 to-blue-500 text-white px-3 py-1 rounded-full font-bold">
+                                ${item.Score || '0/0'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right text-gray-400 text-sm">
+                            ${formatTime(item.Timestamp)}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html || `
+                <tr>
+                    <td colspan="4" class="px-6 py-12 text-center text-gray-400">
+                        Belum ada peserta yang mengikuti quiz
+                    </td>
+                </tr>
+            `;
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return '-';
+            try {
+                const date = new Date(timestamp);
+                return date.toLocaleString('id-ID', {
+                    day: 'numeric',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch {
+                return timestamp;
+            }
+        }
+
+        // Initial fetch
+        fetchLeaderboard();
+        
+        // Auto refresh every 5 seconds
+        setInterval(fetchLeaderboard, 5000);
+    </script>
+</body>
+</html>
