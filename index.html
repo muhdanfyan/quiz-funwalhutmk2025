@@ -299,11 +299,11 @@
 
                 if (result.data) {
                     const sortedData = result.data
-                        .filter(item => item.Score !== null && item.Score !== undefined)
+                        .filter(item => item.Skor !== null && item.Skor !== undefined)
                         .map(item => ({
                             ...item,
-                            scoreNum: parseInt(item.Score.split('/')[0]) || 0,
-                            totalQuestions: parseInt(item.Score.split('/')[1]) || 10
+                            scoreNum: parseInt(item.Skor) || 0,
+                            totalQuestions: 100 // Max score: 50 soal × 2 poin = 100
                         }))
                         .sort((a, b) => {
                             // Sort by Score Descending
@@ -461,7 +461,7 @@
                         ? 'bg-green-100 text-green-700 ring-1 ring-green-500/20'
                         : 'bg-slate-100 text-slate-600 ring-1 ring-slate-500/10'
                     }">
-                                ${item.Score || '0/0'}
+                                ${item.scoreNum}/${item.totalQuestions}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right hidden md:table-cell">
@@ -488,7 +488,25 @@
         function formatTime(timestamp) {
             if (!timestamp) return '-';
             try {
-                const date = new Date(timestamp);
+                // Parse DD/MM/YYYY H:MM:SS format from Google Sheets
+                const parts = timestamp.split(' ');
+                if (parts.length < 2) return timestamp;
+                
+                const dateParts = parts[0].split('/');
+                if (dateParts.length !== 3) return timestamp;
+                
+                const timePart = parts[1] || '00:00:00';
+                const timeParts = timePart.split(':');
+                
+                // Pad time parts with leading zeros
+                const paddedTime = timeParts.map(t => t.padStart(2, '0')).join(':');
+
+                // Convert to YYYY-MM-DD format for Date parsing
+                const isoDate = `${dateParts[2]}-${dateParts[1].padStart(2, '0')}-${dateParts[0].padStart(2, '0')}T${paddedTime}`;
+                const date = new Date(isoDate);
+                
+                if (isNaN(date.getTime())) return timestamp;
+
                 const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
                 // Check if today
                 const today = new Date();
