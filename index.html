@@ -135,7 +135,8 @@
                 <img src="assets/Logo_dispora-dark%20(1).png"
                     class="h-10 md:h-12 w-auto object-contain hover:scale-105 transition-transform" alt="Logo Dispora">
                 <img src="assets/LOGO HUT MAKASSAR PNG (1).png"
-                    class="h-10 md:h-12 w-auto object-contain hover:scale-105 transition-transform mt-2" alt="Logo Dispora">
+                    class="h-10 md:h-12 w-auto object-contain hover:scale-105 transition-transform mt-2"
+                    alt="Logo Dispora">
             </div>
 
             <div
@@ -154,8 +155,8 @@
             <div class="flex flex-col items-center justify-center gap-2 mb-4">
                 <div class="flex items-end justify-center gap-4 mb-2 w-full">
 
-                    <img src="assets/sampul%20Landing%20Page.png"
-                        class="w-full object-contain drop-shadow-xl" alt="Fun Walk Logo">
+                    <img src="assets/sampul%20Landing%20Page.png" class="w-full object-contain drop-shadow-xl"
+                        alt="Fun Walk Logo">
                 </div>
             </div>
 
@@ -453,7 +454,7 @@
                                     ${item['Nama Lengkap'] || 'Unknown'}
                                 </span>
                                 <span class="text-xs text-slate-400 mt-0.5 truncate">
-                                    ${item['Jabatan'] || '-'}
+                                    📱 ${item['Nomor HP'] || '-'}
                                 </span>
                             </div>
                         </td>
@@ -492,20 +493,20 @@
                 // Parse DD/MM/YYYY H:MM:SS format from Google Sheets
                 const parts = timestamp.split(' ');
                 if (parts.length < 2) return timestamp;
-                
+
                 const dateParts = parts[0].split('/');
                 if (dateParts.length !== 3) return timestamp;
-                
+
                 const timePart = parts[1] || '00:00:00';
                 const timeParts = timePart.split(':');
-                
+
                 // Pad time parts with leading zeros
                 const paddedTime = timeParts.map(t => t.padStart(2, '0')).join(':');
 
                 // Convert to YYYY-MM-DD format for Date parsing
                 const isoDate = `${dateParts[2]}-${dateParts[1].padStart(2, '0')}-${dateParts[0].padStart(2, '0')}T${paddedTime}`;
                 const date = new Date(isoDate);
-                
+
                 if (isNaN(date.getTime())) return timestamp;
 
                 const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
