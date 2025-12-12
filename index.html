@@ -174,7 +174,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
             <!-- Left Column: Metrics & Podium (lg:col-span-5) -->
-            <div class="lg:col-span-5 space-y-8">
+            <div class="lg:col-span-12 space-y-8">
 
                 <!-- Metrics Grid -->
                 <div class="grid grid-cols-2 gap-3 md:gap-4">
@@ -246,7 +246,7 @@
             </div>
 
             <!-- Right Column: Full Leaderboard Table (lg:col-span-7) -->
-            <div class="lg:col-span-7">
+            <div class="lg:col-span-12">
                 <div class="glass-card rounded-3xl overflow-hidden shadow-lg border-0 h-full flex flex-col">
                     <div
                         class="px-6 py-5 border-b border-slate-100/50 bg-white/50 backdrop-blur-sm sticky top-0 z-20 flex justify-between items-center">
@@ -452,8 +452,8 @@
                                 <span class="font-bold text-slate-700 group-hover:text-orange-700 transition-colors">
                                     ${item['Nama Lengkap'] || 'Unknown'}
                                 </span>
-                                <span class="text-xs text-slate-400 font-mono mt-0.5 max-w-[150px] truncate">
-                                    ${item['Email'] || ''}
+                                <span class="text-xs text-slate-400 mt-0.5 truncate">
+                                    ${item['Jabatan'] || '-'}
                                 </span>
                             </div>
                         </td>
